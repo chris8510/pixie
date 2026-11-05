@@ -48,10 +48,13 @@ test('invalid settings JSON is not overwritten', () => {
   assert.strictEqual(fs.readFileSync(file, 'utf8'), '{ broken');
 });
 
-test('the real curl hook command reaches the server', async (t) => {
+test('the real curl hook command reaches the server', { timeout: 20000 }, async (t) => {
+  // Claude Code runs hooks through a POSIX shell (Git Bash on Windows); test that path where it exists.
+  if (process.platform === 'win32') return t.skip('needs a POSIX shell');
   try { execSync('curl --version', { stdio: 'ignore' }); } catch { return t.skip('curl not installed'); }
   const store = new StateStore();
   const server = createServer(store);
+  t.after(() => server.close());
   await new Promise((r) => server.listen(0, '127.0.0.1', r));
   const { port } = server.address();
   const event = JSON.stringify({

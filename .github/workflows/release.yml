@@ -17,6 +17,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: release
+  cancel-in-progress: true
+
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -51,8 +55,10 @@ jobs:
         with:
           node-version: 22
       - run: npm install
-      - run: node --test
+      - run: node --test --test-timeout=60000
+        timeout-minutes: 5
       - run: npx electron-builder --publish always
+        timeout-minutes: 30
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # No Apple/Windows signing certificates yet – build unsigned.
