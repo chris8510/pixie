@@ -86,6 +86,14 @@ test('the real hook (curl, exec form, no shell) reaches the server', { timeout: 
   assert.strictEqual(store.snapshot().message, 'Writing a.js');
   assert.strictEqual(store.snapshot().project, 'web-app');
 
+  // a UTF-8 BOM and trailing newline (Windows PowerShell pipe) are tolerated
+  const bom = await fetch(`http://127.0.0.1:${port}/event`, {
+    method: 'POST', headers: { 'X-Pixie': '1' },
+    body: '\uFEFF{"hook_event_name":"UserPromptSubmit","session_id":"ps","prompt":"From PowerShell"}\r\n',
+  });
+  assert.strictEqual(bom.status, 204);
+  assert.strictEqual(store.snapshot().task, 'From PowerShell');
+
   // without the header (e.g. a website) the server refuses
   const res = await fetch(`http://127.0.0.1:${port}/state`, { method: 'POST', body: '{"state":"error"}' });
   assert.strictEqual(res.status, 403);

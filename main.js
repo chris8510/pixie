@@ -226,6 +226,7 @@ function buildMenu() {
     connected
       ? { label: t('hooksRemove'), click: () => setHooks(true) }
       : { label: t('hooksInstall'), click: () => setHooks(false) },
+    { label: t('checkConnection'), click: checkConnection },
     {
       label: t('alwaysOnTop'),
       type: 'checkbox',
@@ -250,6 +251,19 @@ function buildMenu() {
     { label: t('quit'), click: () => app.quit() },
   );
   return Menu.buildFromTemplate(items);
+}
+
+function checkConnection() {
+  let card;
+  if (!hooks.isInstalled()) card = { title: t('checkNo'), sub: t('checkNoSub'), cls: 'error' };
+  else if (!store.lastHookAt) card = { title: t('checkWaiting'), sub: t('checkWaitingSub'), cls: 'needsInput' };
+  else {
+    const s = Math.max(1, Math.round((Date.now() - store.lastHookAt) / 1000));
+    const ago = s < 60 ? t('agoSec', { n: s }) : s < 3600 ? t('agoMin', { n: Math.round(s / 60) }) : t('agoHour', { n: Math.round(s / 3600) });
+    card = { title: t('checkOk'), sub: t('checkOkSub', { ago }), cls: 'done' };
+  }
+  showWindow();
+  send('card', { ...card, ms: 9000 });
 }
 
 function refreshTrayMenu() {

@@ -104,3 +104,15 @@ test('tool descriptions and languages', () => {
   assert.strictEqual(pickLanguage('auto', 'fr-FR'), 'en');
   assert.strictEqual(pickLanguage('en', 'de-DE'), 'en');
 });
+
+test('prompt title drops context blocks the app prepends', () => {
+  const { cleanPrompt } = require('../src/state');
+  assert.strictEqual(cleanPrompt('<system-reminder>\nThe user started this session without a folder\n</system-reminder>\nFix the login bug'), 'Fix the login bug');
+  assert.strictEqual(cleanPrompt('<context>x</context> <system-reminder>y</system-reminder>  Hello   there'), 'Hello there');
+  assert.strictEqual(cleanPrompt('Use <b>bold</b> here'), 'Use <b>bold</b> here');
+  const s = new StateStore();
+  assert.strictEqual(s.lastHookAt, 0);
+  s.handleHookEvent(ev('UserPromptSubmit', { prompt: '<system-reminder>ctx</system-reminder>Make tests pass' }));
+  assert.strictEqual(s.snapshot().task, 'Make tests pass');
+  assert.ok(s.lastHookAt > 0);
+});

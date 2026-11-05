@@ -32,7 +32,9 @@ More: click the pet to make it hop, drag it anywhere (it runs along), it looks t
 
 1. Download the installer for your system from [**Releases**](../../releases) (macOS `.dmg`, Windows `.exe`, Linux `.AppImage`).
 2. Start Pixie and click **"Connect to Claude Code"** on the card. This adds a few hooks to `~/.claude/settings.json` (a backup is made first; your existing hooks stay untouched).
-3. Restart running Claude Code sessions. Done.
+3. Restart running Claude Code sessions. Done. Right-click → **Check connection** shows whether Pixie has heard from Claude Code.
+
+> Pixie follows **Claude Code running on your computer** – in a terminal or in the *Code* section of the Claude desktop app. Chats and cloud sessions run on Anthropic's servers, so their hooks never reach your machine.
 
 > **macOS:** the app isn't signed with an Apple developer certificate yet. On first launch, right-click Pixie → **Open**. If macOS says the app is "damaged", run `xattr -cr /Applications/Pixie.app` once.
 > **Windows:** SmartScreen may warn about an unknown publisher → **More info → Run anyway**.

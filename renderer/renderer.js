@@ -241,6 +241,7 @@
   await switchPet();
   window.pet.onPetChanged(async () => { lastDrawn = ''; await switchPet(); });
   window.pet.onState(applyState);
+  window.pet.onCard((c) => showLocal(c.title, c.sub, c.cls, c.ms));
   applyState(await window.pet.getState());
   requestAnimationFrame(frame);
 

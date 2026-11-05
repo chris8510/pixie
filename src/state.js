@@ -53,6 +53,15 @@ function describeTool(name, input, t = translator('en')) {
   }
 }
 
+// The user's prompt as a short title. Apps may prepend context blocks such as
+// <system-reminder>…</system-reminder>; those are not what the user typed.
+function cleanPrompt(prompt) {
+  let s = String(prompt || '').replace(/<system-reminder>[\s\S]*?<\/system-reminder>/gi, ' ');
+  // any other complete tag blocks at the very start, e.g. <context>…</context>
+  for (let m; (m = s.match(/^\s*<([a-z][\w-]*)[^>]*>[\s\S]*?<\/\1>/i));) s = s.slice(m[0].length);
+  return truncate(s, 80);
+}
+
 // Claude Code sends its notifications in English; translate the common ones.
 function translateNotification(message, t = translator('en')) {
   const m = String(message || '');
@@ -69,6 +78,7 @@ class StateStore {
     this.sessions = new Map();
     this.timers = new Map();
     this.listeners = new Set();
+    this.lastHookAt = 0; // when Claude Code last reported anything (for "check connection")
   }
 
   onChange(fn) {
@@ -88,6 +98,7 @@ class StateStore {
     const project = ev.cwd ? path.basename(String(ev.cwd)) : undefined;
     // Hooks run async, so a tool event fired just before "Stop" can arrive just after it.
     const prev = this.sessions.get(id);
+    if (ev.hook_event_name) this.lastHookAt = this.now();
     const late = ['PreToolUse', 'PostToolUse', 'PreCompact'].includes(ev.hook_event_name);
     if (late && prev && prev.state === 'done' && this.now() - prev.ts < 2000) return false;
     switch (ev.hook_event_name) {
@@ -96,7 +107,7 @@ class StateStore {
         this.scheduleIdle(id, this.greetMs);
         return true;
       case 'UserPromptSubmit':
-        return this.set(id, 'thinking', t('thinking'), project, ev.prompt ? truncate(ev.prompt, 80) : undefined);
+        return this.set(id, 'thinking', t('thinking'), project, typeof ev.prompt === 'string' ? cleanPrompt(ev.prompt) : undefined);
       case 'PreToolUse':
         return this.set(id, 'working', describeTool(ev.tool_name, ev.tool_input, t), project);
       case 'PostToolUse':
@@ -199,4 +210,4 @@ class StateStore {
   }
 }
 
-module.exports = { StateStore, describeTool, translateNotification, truncate, STATES };
+module.exports = { StateStore, describeTool, translateNotification, cleanPrompt, truncate, STATES };

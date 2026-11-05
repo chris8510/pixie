@@ -10,6 +10,7 @@ contextBridge.exposeInMainWorld('pet', {
   installHooks: () => ipcRenderer.invoke('hooks:install'),
   onState: (fn) => ipcRenderer.on('state', (_e, snap) => fn(snap)),
   onPetChanged: (fn) => ipcRenderer.on('pet:changed', () => fn()),
+  onCard: (fn) => ipcRenderer.on('card', (_e, card) => fn(card)),
   onVoiceProgress: (fn) => ipcRenderer.on('voice:progress', (_e, percent) => fn(percent)),
   voiceAccess: () => ipcRenderer.invoke('voice:access'),
   transcribe: (samples) => ipcRenderer.invoke('voice:transcribe', samples),

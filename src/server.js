@@ -31,7 +31,9 @@ function createServer(store) {
     req.on('end', () => {
       if (tooBig) return reply(413, { error: 'too large' });
       let data;
-      try { data = JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}'); } catch { return reply(400, { error: 'invalid json' }); }
+      // tolerate a UTF-8 BOM and trailing newline (e.g. Windows PowerShell 5.1 pipes add both)
+      const text = Buffer.concat(chunks).toString('utf8').replace(/^\uFEFF/, '').trim();
+      try { data = JSON.parse(text || '{}'); } catch { return reply(400, { error: 'invalid json' }); }
       if (req.url === '/event') {
         store.handleHookEvent(data);
         return reply(204);
