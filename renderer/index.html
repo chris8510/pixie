@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; media-src 'self' blob:">
+  <title>Pixie</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main id="stack">
+    <section id="reply" class="panel hit hidden" aria-live="polite">
+      <header>
+        <span id="reply-title" data-t="answer"></span>
+        <span class="tools">
+          <button id="reply-copy" type="button" data-t="copy"></button>
+          <button id="reply-close" type="button" data-t-label="close">×</button>
+        </span>
+      </header>
+      <pre id="reply-text"></pre>
+    </section>
+
+    <section id="askbox" class="panel hit hidden">
+      <div class="panel-title" data-t="quickTitle"></div>
+      <div id="prompt-buttons"></div>
+      <form id="ask">
+        <input id="ask-input" type="text" autocomplete="off" data-t-placeholder="askPlaceholder">
+        <button type="submit" data-t-label="send">
+          <svg viewBox="0 0 16 16" width="14" height="14"><path d="M8 13V3M3.5 7.5 8 3l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </form>
+    </section>
+
+    <div id="bubble" class="bubble hit hidden" role="status">
+      <div id="bubble-title"><i class="dot"></i><span></span></div>
+      <div id="bubble-sub"></div>
+    </div>
+
+    <div id="pet-col">
+      <div id="pet-wrap">
+        <span id="badge" class="hidden"></span>
+        <span id="zz" class="hidden" aria-hidden="true"><i>z</i><i>z</i><i>Z</i></span>
+        <canvas id="pet" class="hit" data-t-title="petTooltip"></canvas>
+      </div>
+      <div id="dock" class="hit">
+        <span id="handle"></span>
+        <div id="pill" class="hidden">
+          <button id="btn-ask" type="button" data-t-title="btnAsk">
+            <svg viewBox="0 0 16 16" width="15" height="15"><path d="M10.5 2.5l3 3L6 13H3v-3z M9 4l3 3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+          </button>
+          <button id="btn-voice" type="button" data-t-title="btnVoice">
+            <svg viewBox="0 0 16 16" width="15" height="15"><rect x="5.75" y="1.75" width="4.5" height="8" rx="2.25" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M3.5 7.5a4.5 4.5 0 0 0 9 0M8 12v2.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+          <button id="btn-reply" type="button" data-t-title="btnReply" disabled>
+            <svg viewBox="0 0 16 16" width="15" height="15"><path d="M4 10l4-4 4 4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+  <script src="sheet.js"></script>
+  <script src="audio.js"></script>
+  <script src="renderer.js"></script>
+</body>
+</html>

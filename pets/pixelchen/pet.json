@@ -1,0 +1,7 @@
+{
+  "id": "pixelchen",
+  "displayName": "Pixelchen",
+  "description": "A little pixel sprout that keeps an eye on what Claude is doing.",
+  "spritesheetPath": "spritesheet.png",
+  "pixelated": true
+}

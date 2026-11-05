@@ -1,0 +1,31 @@
+{
+  "language": "auto",
+  "pet": "pixelchen",
+  "petScale": 0.65,
+  "port": 47821,
+  "shortcut": "CommandOrControl+Alt+P",
+  "notifyOnInput": true,
+  "readyTimeoutSeconds": 0,
+  "sleepAfterSeconds": 120,
+  "claudeCommand": "claude",
+  "claudeArgs": [
+    "--allowedTools",
+    "Read",
+    "Grep",
+    "Glob",
+    "Bash(git status:*)",
+    "Bash(git diff:*)",
+    "Bash(git log:*)"
+  ],
+  "promptCwd": "~",
+  "promptTimeoutSeconds": 300,
+  "prompts": null,
+  "voice": {
+    "enabled": true,
+    "model": "onnx-community/whisper-base",
+    "dtype": "q8",
+    "language": "auto",
+    "autoSend": false,
+    "maxSeconds": 60
+  }
+}

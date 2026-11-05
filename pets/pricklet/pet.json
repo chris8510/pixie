@@ -1,0 +1,7 @@
+{
+  "id": "pricklet",
+  "displayName": "Pricklet",
+  "description": "A sleepy little cactus in a clay pot – waves, sweats while working, inspects with a tiny magnifier and wilts when something fails.",
+  "spritesheetPath": "spritesheet.png",
+  "pixelated": true
+}

@@ -1,0 +1,42 @@
+name: Release
+# Push a tag like v0.4.0 → installers for macOS, Windows and Linux are built
+# and attached to a draft GitHub release. Review it, then click "Publish".
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: node --test
+      - run: npx electron-builder --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # No Apple/Windows signing certificates yet – build unsigned.
+          # Add CSC_LINK / CSC_KEY_PASSWORD (and APPLE_ID…) secrets later to sign.
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+
+  # The Claude skill for making pets, as a zip for the Claude app.
+  skill:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: cd skills && zip -r ../pixie-pet-skill.zip pixie-pet
+      - run: gh release upload "${{ github.ref_name }}" pixie-pet-skill.zip --clobber
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
