@@ -11,7 +11,8 @@ const { spawn } = require('child_process');
 
 const { StateStore } = require('./src/state');
 const { createServer } = require('./src/server');
-const { petRoots, discoverPets, sheetDataUrl } = require('./src/pets');
+const { petRoots, scanPets: scanPetFolders, sheetDataUrl } = require('./src/pets');
+const { findClaude, verify: verifyClaude } = require('./src/claude-bin');
 const hooks = require('./src/hooks');
 const { PIXIE_HOME, USER_CONFIG, loadConfig, expandHome } = require('./src/config');
 const { STRINGS, DEFAULT_PROMPTS, pickLanguage, translator } = require('./src/i18n');
@@ -104,7 +105,21 @@ function saveSettings() {
 // ---------- pets ----------
 
 function scanPets() {
-  pets = discoverPets(petRoots({ appDir: __dirname }));
+  const res = scanPetFolders(petRoots({ appDir: __dirname }));
+  pets = res.pets;
+  return res;
+}
+
+function rescanPets() {
+  const { pets: found, skipped } = scanPets();
+  const list = skipped.map((s) => `${path.basename(s.dir)} (${s.reason})`).join(', ');
+  send('card', {
+    title: t('petsFound', { n: found.length }),
+    sub: skipped.length ? t('petsSkipped', { list }) : t('petsAllGood'),
+    cls: skipped.length ? 'needsInput' : 'done',
+    ms: skipped.length ? 15000 : 6000,
+  });
+  selectPet(selectedPet()?.id);
 }
 
 function selectedPet() {
@@ -209,7 +224,7 @@ function petMenu() {
     items.push({ label: p.displayName, type: 'radio', checked: current?.id === p.id, click: () => selectPet(p.id) });
   }
   items.push({ type: 'separator' });
-  items.push({ label: t('rescanPets'), click: () => { scanPets(); selectPet(selectedPet()?.id); } });
+  items.push({ label: t('rescanPets'), click: rescanPets });
   items.push({
     label: t('openPetFolder'),
     click: () => { fs.mkdirSync(USER_PET_DIR, { recursive: true }); shell.openPath(USER_PET_DIR); },
@@ -390,12 +405,34 @@ function commandEnv() {
   return env;
 }
 
-function runClaude(prompt) {
+// Where Claude Code lives; remembered once found (desktop-app users often don't have it on PATH).
+async function claudeBinary() {
+  if (settings.claudePath && await verifyClaude(settings.claudePath)) return settings.claudePath;
+  const found = await findClaude({ configured: config.claudeCommand, env: commandEnv() });
+  if (found) {
+    settings.claudePath = found;
+    saveSettings();
+  }
+  return found;
+}
+
+async function runClaude(prompt) {
+  if (!prompt.trim()) return { ok: false, output: t('emptyPrompt') };
+  store.set('quick', 'thinking', t('searchingClaude'), undefined, prompt.length > 80 ? prompt.slice(0, 79) + '…' : prompt);
+  const bin = await claudeBinary();
+  if (!bin) {
+    store.set('quick', 'error', t('failed'));
+    return { ok: false, output: t('claudeNotFound') };
+  }
+  return runClaudeWith(bin, prompt);
+}
+
+function runClaudeWith(bin, prompt) {
   return new Promise((resolve) => {
-    if (!prompt.trim()) return resolve({ ok: false, output: t('emptyPrompt') });
     const cwd = expandHome(config.promptCwd) || os.homedir();
-    const isWin = process.platform === 'win32';
-    const args = ['-p', ...config.claudeArgs].map((a) => (isWin ? `"${String(a).replace(/"/g, '\\"')}"` : String(a)));
+    // .cmd shims (npm on Windows) need a shell; real executables are started directly.
+    const useShell = /\.(cmd|bat)$/i.test(bin);
+    const args = ['-p', ...config.claudeArgs].map((a) => (useShell ? `"${String(a).replace(/"/g, '\\"')}"` : String(a)));
     let out = '';
     let err = '';
     let done = false;
@@ -412,7 +449,7 @@ function runClaude(prompt) {
 
     let child;
     try {
-      child = spawn(config.claudeCommand, args, { cwd, env: commandEnv(), shell: isWin, windowsHide: true });
+      child = spawn(useShell ? `"${bin}"` : bin, args, { cwd, env: commandEnv(), shell: useShell, windowsHide: true });
     } catch (e) {
       return finish(false, e.message);
     }
@@ -424,7 +461,10 @@ function runClaude(prompt) {
     child.stdout.on('data', (d) => { out += d; });
     child.stderr.on('data', (d) => { err += d; });
     child.stdin.on('error', () => {});
-    child.on('error', (e) => finish(false, e.code === 'ENOENT' ? t('claudeNotFound', { cmd: config.claudeCommand }) : e.message));
+    child.on('error', (e) => {
+      if (e.code === 'ENOENT') delete settings.claudePath; // moved/updated – search again next time
+      finish(false, e.code === 'ENOENT' ? t('claudeNotFound') : e.message);
+    });
     child.on('close', (code) => finish(code === 0, code === 0 ? out.trim() || t('noOutput') : (err.trim() || out.trim() || `Exit code ${code}`)));
     child.stdin.end(prompt);
   });

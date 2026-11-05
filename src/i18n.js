@@ -47,7 +47,7 @@ const STRINGS = {
     openSettings: 'Einstellungen öffnen', reload: 'Neu laden', quit: 'Pixie beenden',
     rescanPets: 'Pets neu einlesen', openPetFolder: 'Ordner für eigene Pets öffnen',
     src_builtin: 'Mitgeliefert', src_user: 'Eigene', src_codex: 'Codex',
-    claudeNotFound: '„{cmd}“ wurde nicht gefunden. Trag in der config.json bei "claudeCommand" den vollen Pfad ein (Terminal: which claude).',
+    claudeNotFound: 'Claude Code wurde nicht gefunden – weder im PATH noch bei der Claude-Desktop-App. Trag den vollen Pfad in der config.json bei "claudeCommand" ein.',
     timeout: 'Abgebrochen nach {s} s.', emptyPrompt: 'Leerer Prompt.', noOutput: '(keine Ausgabe)',
     portBusy: 'Port {port} ist belegt',
     checkConnection: 'Verbindung prüfen',
@@ -58,6 +58,8 @@ const STRINGS = {
     checkNo: 'Nicht mit Claude Code verbunden',
     checkNoSub: 'Rechtsklick → „Mit Claude Code verbinden“',
     agoSec: '{n} s', agoMin: '{n} min', agoHour: '{n} h',
+    petsFound: '{n} Pets gefunden', petsSkipped: 'Übersprungen: {list}', petsAllGood: 'Ordner: ~/.pixie/pets und ~/.codex/pets',
+    searchingClaude: 'Suche Claude Code…',
   },
   en: {
     ready: 'Ready!',
@@ -100,7 +102,7 @@ const STRINGS = {
     openSettings: 'Open settings', reload: 'Reload', quit: 'Quit Pixie',
     rescanPets: 'Rescan pets', openPetFolder: 'Open folder for your pets',
     src_builtin: 'Built-in', src_user: 'Your pets', src_codex: 'Codex',
-    claudeNotFound: '"{cmd}" was not found. Set the full path as "claudeCommand" in config.json (terminal: which claude).',
+    claudeNotFound: 'Claude Code was not found – neither on PATH nor in the Claude desktop app. Set its full path as "claudeCommand" in config.json.',
     timeout: 'Cancelled after {s} s.', emptyPrompt: 'Empty prompt.', noOutput: '(no output)',
     portBusy: 'Port {port} is already in use',
     checkConnection: 'Check connection',
@@ -111,6 +113,8 @@ const STRINGS = {
     checkNo: 'Not connected to Claude Code',
     checkNoSub: 'Right-click → "Connect to Claude Code"',
     agoSec: '{n} s', agoMin: '{n} min', agoHour: '{n} h',
+    petsFound: '{n} pets found', petsSkipped: 'Skipped: {list}', petsAllGood: 'Folders: ~/.pixie/pets and ~/.codex/pets',
+    searchingClaude: 'Looking for Claude Code…',
   },
 };
 

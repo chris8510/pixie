@@ -47,7 +47,8 @@ Pixie spielt Spritesheets im **Codex-Pet-Format** ab. Pets für ChatGPT/Codex fu
 
 - Pets in `~/.codex/pets/` werden automatisch gefunden (z. B. installiert mit `npx codex-pets add <id>`).
 - Eigene Pets kommen nach `~/.pixie/pets/<name>/` (Menü → Pet → *Ordner für eigene Pets öffnen*).
-- Wechseln über **Rechtsklick → Pet**.
+- Wechseln über **Rechtsklick → Pet**. *Pets neu einlesen* zeigt, wie viele gefunden wurden und warum ein Ordner übersprungen wurde.
+- Die eingebauten Codex-Pets stecken in der Codex-App selbst, nicht in `~/.codex/pets` – angezeigt werden also nur eigene bzw. installierte Codex-Pets.
 
 Ein Pet ist ein Ordner mit `pet.json` und `spritesheet.webp` (oder `.png`): 8 Spalten, Zellen à 192 × 208 px, transparenter Hintergrund.
 
@@ -85,7 +86,7 @@ Rechtsklick → *Einstellungen öffnen* öffnet `~/.pixie/config.json`:
 | `petScale` | Größe; 0.65 ≈ 125 × 135 px, 1 = Originalgröße |
 | `prompts` | Schnellaktionen: `[{ "label": "…", "prompt": "…" }]` (`null` = mitgelieferte Beispiele) |
 | `promptCwd` | Ordner, in dem Schnellfragen laufen (z. B. dein aktuelles Projekt) |
-| `claudeCommand`, `claudeArgs` | wie `claude -p` aufgerufen wird. Standardmäßig nur lesende Tools und Git-Lesebefehle |
+| `claudeCommand`, `claudeArgs` | wie `claude -p` aufgerufen wird. Pixie findet Claude Code selbst (PATH, übliche Installationsorte, laufende Sitzung, Claude-Desktop-App); einen vollen Pfad nur eintragen, wenn das nicht klappt. Standardmäßig nur lesende Tools und Git-Lesebefehle |
 | `voice.enabled`, `voice.language` | Spracheingabe an/aus; `"auto"` oder z. B. `"de"` |
 | `voice.model` | `onnx-community/whisper-base` (≈ 85 MB, Standard), `…/whisper-small` (≈ 250 MB, genauer – lohnt sich für Deutsch) |
 | `voice.autoSend` | direkt nach dem Umwandeln senden, statt den Text erst zu zeigen |

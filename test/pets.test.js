@@ -50,3 +50,23 @@ test('idle pauses on the first frame between cycles', () => {
   // missing row falls back to idle
   assert.strictEqual(S.loopCell('failed', 0, [6, 8, 8, 4, 5, 0, 6, 6, 6]).row, 0);
 });
+
+test('sheets outside the pet folder are allowed, skipped folders are explained', () => {
+  const { scanPets } = require('../src/pets');
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'pet-'));
+  const codex = path.join(home, '.codex', 'pets');
+  fs.mkdirSync(path.join(codex, 'owl'), { recursive: true });
+  fs.mkdirSync(path.join(home, 'images'));
+  fs.writeFileSync(path.join(home, 'images', 'owl.webp'), 'x');
+  fs.writeFileSync(path.join(codex, 'owl', 'pet.json'), JSON.stringify({ id: 'owl', spritesheetPath: path.join(home, 'images', 'owl.webp') }));
+  fs.mkdirSync(path.join(codex, 'broken'));
+  fs.writeFileSync(path.join(codex, 'broken', 'pet.json'), JSON.stringify({ spritesheetPath: 'missing.webp' }));
+  fs.mkdirSync(path.join(codex, 'gif'));
+  fs.writeFileSync(path.join(codex, 'gif', 'pet.json'), JSON.stringify({ spritesheetPath: 'sheet.gif' }));
+  const { pets, skipped } = scanPets([{ dir: codex, source: 'codex' }]);
+  assert.deepStrictEqual(pets.map((p) => p.id), ['owl']);
+  assert.deepStrictEqual(skipped.map((s) => [path.basename(s.dir), s.reason]), [
+    ['broken', 'missing.webp not found'],
+    ['gif', 'sheet.gif: only .png or .webp'],
+  ]);
+});

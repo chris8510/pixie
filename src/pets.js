@@ -28,36 +28,45 @@ function readManifest(dir) {
   }
 }
 
+// Returns { file } or { reason }. The sheet may live anywhere (absolute or
+// relative path) – we only ever read it as an image, so PNG/WebP is required.
 function findSheet(dir, manifest) {
   const candidates = manifest.spritesheetPath
     ? [manifest.spritesheetPath]
     : ['spritesheet.webp', 'spritesheet.png'];
   for (const rel of candidates) {
-    const abs = path.resolve(dir, String(rel));
-    // stay inside the pet folder and only accept image types we can show
-    if (!abs.startsWith(path.resolve(dir) + path.sep)) continue;
-    if (!MIME[path.extname(abs).toLowerCase()]) continue;
+    const abs = path.resolve(dir, String(rel).replace(/^~(?=$|[\\/])/, os.homedir()));
+    if (!MIME[path.extname(abs).toLowerCase()]) return { reason: `${rel}: only .png or .webp` };
     try {
-      if (fs.statSync(abs).isFile()) return abs;
+      if (fs.statSync(abs).isFile()) return { file: abs };
     } catch { /* missing */ }
   }
-  return null;
+  return { reason: `${candidates.join(' / ')} not found` };
 }
 
-function discoverPets(roots) {
+// { pets, skipped: [{ dir, reason }] }
+function scanPets(roots) {
   const pets = [];
+  const skipped = [];
   const seen = new Set();
   for (const { dir, source } of roots) {
     let entries;
     try { entries = fs.readdirSync(dir); } catch { continue; }
     for (const name of entries.sort()) {
+      if (name.startsWith('.')) continue;
       const petDir = path.join(dir, name);
       try { if (!fs.statSync(petDir).isDirectory()) continue; } catch { continue; }
       const manifest = readManifest(petDir);
-      const sheetPath = findSheet(petDir, manifest);
-      if (!sheetPath) continue;
+      const { file: sheetPath, reason } = findSheet(petDir, manifest);
+      if (!sheetPath) {
+        skipped.push({ dir: petDir, source, reason });
+        continue;
+      }
       const id = String(manifest.id || name);
-      if (seen.has(id)) continue;
+      if (seen.has(id)) {
+        skipped.push({ dir: petDir, source, reason: `id "${id}" already used` });
+        continue;
+      }
       seen.add(id);
       pets.push({
         id,
@@ -70,8 +79,10 @@ function discoverPets(roots) {
       });
     }
   }
-  return pets;
+  return { pets, skipped };
 }
+
+const discoverPets = (roots) => scanPets(roots).pets;
 
 function sheetDataUrl(pet) {
   const { size } = fs.statSync(pet.sheetPath);
@@ -80,4 +91,4 @@ function sheetDataUrl(pet) {
   return `data:${mime};base64,${fs.readFileSync(pet.sheetPath).toString('base64')}`;
 }
 
-module.exports = { petRoots, discoverPets, sheetDataUrl };
+module.exports = { petRoots, discoverPets, scanPets, sheetDataUrl };
