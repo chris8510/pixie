@@ -1,8 +1,16 @@
 name: Release
-# Push a tag like v0.4.0 → installers for macOS, Windows and Linux are built
-# and attached to a draft GitHub release. Review it, then click "Publish".
+# Builds installers for macOS, Windows and Linux and attaches them (plus the
+# pixie-pet skill) to a DRAFT GitHub release named after package.json's version.
+#
+# Runs when
+#   - main gets a push and no tag v<version> exists yet (bump "version" to release), or
+#   - a tag v* is pushed, or
+#   - it's started by hand (Actions → Release → Run workflow).
+# Review the draft on the Releases page, then click "Publish" – that creates the tag.
+
 on:
   push:
+    branches: [main]
     tags: ['v*']
   workflow_dispatch:
 
@@ -10,7 +18,28 @@ permissions:
   contents: write
 
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      build: ${{ steps.v.outputs.build }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: v
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref_type }}" = "branch" ] \
+             && git ls-remote --exit-code --tags origin "refs/tags/v$VERSION" >/dev/null; then
+            echo "v$VERSION is already released – bump the version in package.json to release again."
+            echo "build=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          fi
+
   build:
+    needs: check
+    if: needs.check.outputs.build == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -32,11 +61,11 @@ jobs:
 
   # The Claude skill for making pets, as a zip for the Claude app.
   skill:
-    needs: build
+    needs: [check, build]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - run: cd skills && zip -r ../pixie-pet-skill.zip pixie-pet
-      - run: gh release upload "${{ github.ref_name }}" pixie-pet-skill.zip --clobber
+      - run: gh release upload "v${{ needs.check.outputs.version }}" pixie-pet-skill.zip --clobber
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

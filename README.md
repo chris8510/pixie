@@ -114,7 +114,7 @@ npm test                 # unit + integration tests
 npm run dist             # build installers locally into dist/
 ```
 
-Releases: push a tag like `v0.4.0` – GitHub Actions builds macOS, Windows and Linux installers and attaches them to a draft release.
+Releases: bump `version` in `package.json` and push to `main` (or push a tag like `v0.5.0`). GitHub Actions builds macOS, Windows and Linux installers and attaches them to a draft release – review it and click *Publish*.
 
 ```
 main.js            Electron main process: window, tray, menu, IPC

@@ -114,7 +114,7 @@ npm test                 # Tests
 npm run dist             # Installer lokal nach dist/ bauen
 ```
 
-Release: einen Tag wie `v0.4.0` pushen – GitHub Actions baut die Installer für macOS, Windows und Linux und hängt sie an einen Release-Entwurf.
+Release: `version` in `package.json` erhöhen und auf `main` pushen (oder einen Tag wie `v0.5.0` pushen). GitHub Actions baut die Installer für macOS, Windows und Linux und hängt sie an einen Release-Entwurf – prüfen und auf *Publish* klicken.
 
 ## Datenschutz
 
