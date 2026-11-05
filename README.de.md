@@ -38,6 +38,8 @@ Außerdem: Klick aufs Pet lässt es hüpfen, du kannst es überallhin ziehen (es
 
 > Pixie verfolgt **Claude Code auf deinem Rechner** – im Terminal oder im Bereich *Code* der Claude-Desktop-App. Chats und Cloud-Sitzungen laufen auf Anthropics Servern, ihre Hooks erreichen deinen Rechner also nie.
 
+> **Windows:** Pixie kommt auch in den [Microsoft Store](https://apps.microsoft.com/detail/9MXX7C3SVWDG) – von dort installiert ist es von Microsoft signiert, ohne Warnungen und aktualisiert sich selbst.
+
 > **macOS:** Die App ist noch nicht mit einem Apple-Entwicklerzertifikat signiert. Beim ersten Start: Rechtsklick auf Pixie → **Öffnen**. Meldet macOS, die App sei „beschädigt“, einmal `xattr -cr /Applications/Pixie.app` im Terminal ausführen.
 > **Windows:** SmartScreen warnt eventuell vor einem unbekannten Herausgeber → **Weitere Informationen → Trotzdem ausführen**.
 

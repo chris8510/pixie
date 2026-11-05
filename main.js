@@ -258,7 +258,8 @@ function buildMenu() {
       click: (item) => win && win.setAlwaysOnTop(item.checked, 'floating'),
     },
   ];
-  if (process.platform !== 'linux') {
+  // Store (MSIX) builds can't register login items this way
+  if (process.platform !== 'linux' && !process.windowsStore) {
     items.push({
       label: t('openAtLogin'),
       type: 'checkbox',

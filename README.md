@@ -38,6 +38,8 @@ More: click the pet to make it hop, drag it anywhere (it runs along), it looks t
 
 > Pixie follows **Claude Code running on your computer** – in a terminal or in the *Code* section of the Claude desktop app. Chats and cloud sessions run on Anthropic's servers, so their hooks never reach your machine.
 
+> **Windows:** Pixie is also coming to the [Microsoft Store](https://apps.microsoft.com/detail/9MXX7C3SVWDG) – installed from there it's signed by Microsoft, shows no warnings and updates itself.
+
 > **macOS:** the app isn't signed with an Apple developer certificate yet. On first launch, right-click Pixie → **Open**. If macOS says the app is "damaged", run `xattr -cr /Applications/Pixie.app` once.
 > **Windows:** SmartScreen may warn about an unknown publisher → **More info → Run anyway**.
 

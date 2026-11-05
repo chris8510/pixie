@@ -1,7 +1,7 @@
 {
   "name": "pixie-pet",
   "productName": "Pixie",
-  "version": "0.4.5",
+  "version": "0.4.6",
   "description": "A tiny desktop pet that shows what Claude Code is doing – compatible with Codex pets.",
   "main": "main.js",
   "private": true,
@@ -74,6 +74,13 @@
             "x64",
             "arm64"
           ]
+        },
+        {
+          "target": "appx",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
         }
       ]
     },
@@ -92,6 +99,23 @@
         "provider": "github",
         "releaseType": "draft"
       }
-    ]
+    ],
+    "appx": {
+      "identityName": "chris8510.PixieDesktopPet",
+      "publisher": "CN=654FCD84-A4E3-4CA6-91F0-88A8A2E34C9C",
+      "publisherDisplayName": "chris8510",
+      "applicationId": "Pixie",
+      "displayName": "Pixie – Desktop Pet",
+      "backgroundColor": "transparent",
+      "languages": [
+        "en-US",
+        "de-DE"
+      ],
+      "capabilities": [
+        "runFullTrust",
+        "microphone"
+      ],
+      "artifactName": "Pixie-${version}-${arch}-store.${ext}"
+    }
   }
 }
