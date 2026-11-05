@@ -98,6 +98,8 @@ Rechtsklick → *Einstellungen öffnen* öffnet `~/.pixie/config.json`:
 
 Das Sprachmodell wird beim ersten Benutzen einmalig nach `~/.pixie/models` geladen.
 
+**Schnellfragen und Anmeldung:** Wer Claude Code nur über die Desktop-App nutzt, dessen Claude Code wird von der App angemeldet, nicht eigenständig. Bei der ersten Schnellfrage bittet Pixie dann einmal um Anmeldung: auf **Anmelden** klicken, im geöffneten Terminal `/login` eingeben, fertig.
+
 ## Andere Agenten anbinden
 
 Jedes Programm auf deinem Rechner kann das Pet steuern:

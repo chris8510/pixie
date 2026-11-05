@@ -1,7 +1,7 @@
 {
   "name": "pixie-pet",
   "productName": "Pixie",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "description": "A tiny desktop pet that shows what Claude Code is doing – compatible with Codex pets.",
   "main": "main.js",
   "private": true,

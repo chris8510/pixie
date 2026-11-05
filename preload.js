@@ -17,6 +17,7 @@ contextBridge.exposeInMainWorld('pet', {
   voiceAccess: () => ipcRenderer.invoke('voice:access'),
   transcribe: (samples) => ipcRenderer.invoke('voice:transcribe', samples),
   runPrompt: (prompt) => ipcRenderer.invoke('prompt:run', prompt),
+  claudeLogin: () => ipcRenderer.send('claude:login'),
   setIgnoreMouse: (ignore) => ipcRenderer.send('mouse:ignore', ignore),
   dragStart: () => ipcRenderer.send('drag:start'),
   dragEnd: () => ipcRenderer.send('drag:end'),

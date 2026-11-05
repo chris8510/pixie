@@ -266,6 +266,17 @@ button:disabled { cursor: progress; }
   user-select: text;
 }
 
+#reply-action {
+  margin: 10px 2px 0;
+  padding: 6px 14px;
+  background: var(--accent);
+  color: #fff;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
 /* ---------- customize panel ---------- */
 .panel-head {
   display: flex;

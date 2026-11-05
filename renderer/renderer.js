@@ -446,8 +446,14 @@
     document.querySelectorAll('#askbox button, #askbox input').forEach((el) => { el.disabled = true; });
     togglePanel(null, false);
     try {
-      const { ok, output } = await window.pet.runPrompt(prompt);
+      const { ok, output, action } = await window.pet.runPrompt(prompt);
       replyText.textContent = output;
+      const actionBtn = $('reply-action');
+      actionBtn.classList.toggle('hidden', action !== 'login');
+      if (action === 'login') {
+        actionBtn.textContent = T('loginNow');
+        actionBtn.onclick = () => window.pet.claudeLogin();
+      }
       $('reply-title').textContent = ok ? T('answer') : T('error');
       buttons.reply.disabled = false;
       togglePanel('reply', true);

@@ -47,3 +47,14 @@ test('a configured absolute path is used first', { skip: !posix }, async () => {
   const mine = fakeBin(path.join(home, 'custom'), 'my-claude', '2.1.317 (Claude Code)');
   assert.strictEqual(await findClaude({ configured: mine, platform: 'linux', env: { PATH: '' }, home, skipProcesses: true }), mine);
 });
+
+test('Windows Store/MSIX installs: the virtualized LocalCache folders are searched', () => {
+  const { appDataDirs } = require('../src/claude-bin');
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'cb-'));
+  const local = path.join(home, 'AppData', 'Local');
+  fs.mkdirSync(path.join(local, 'Packages', 'Claude_pzs8sxrjxfjjc'), { recursive: true });
+  fs.mkdirSync(path.join(local, 'Packages', 'OpenAI.Codex_2p2nqsd0c76g0'), { recursive: true });
+  const dirs = appDataDirs({ platform: 'win32', env: { LOCALAPPDATA: local, APPDATA: path.join(home, 'AppData', 'Roaming') }, home });
+  assert.ok(dirs.includes(path.join(local, 'Packages', 'Claude_pzs8sxrjxfjjc', 'LocalCache', 'Roaming', 'Claude')));
+  assert.ok(!dirs.some((d) => d.includes('OpenAI')));
+});

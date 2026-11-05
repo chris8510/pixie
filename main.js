@@ -85,6 +85,7 @@ function start() {
 
   store.onChange((snap) => {
     send('state', snap);
+    learnClaudePath();
     const key = snap.state === 'needsInput' ? snap.message : null;
     if (key && key !== lastNotified && config.notifyOnInput && Notification.isSupported()) {
       new Notification({ title: snap.project ? `Pixie · ${snap.project}` : 'Pixie', body: snap.message }).show();
@@ -318,6 +319,7 @@ ipcMain.handle('state:get', () => store.snapshot());
 ipcMain.on('state:ack', () => store.acknowledge());
 ipcMain.handle('hooks:install', () => setHooks(false));
 ipcMain.handle('prompt:run', (_e, prompt) => runClaude(String(prompt || '').slice(0, 8000)));
+ipcMain.on('claude:login', () => openLoginTerminal());
 
 ipcMain.handle('pet:get', (_e, id) => {
   const pet = (id && pets.find((p) => p.id === id)) || selectedPet();
@@ -430,6 +432,45 @@ function commandEnv() {
   return env;
 }
 
+// Opens a terminal running Claude Code, so the user can type /login once.
+let loginBin = null;
+function openLoginTerminal() {
+  const bin = loginBin || settings.claudePath;
+  if (!bin) return;
+  try {
+    if (process.platform === 'win32') {
+      // verbatim: cmd needs exactly  start "title" "C:\path\claude.exe"
+      spawn('cmd.exe', ['/c', 'start', '"Claude Code"', `"${bin}"`], { detached: true, windowsHide: false, windowsVerbatimArguments: true }).unref();
+    } else if (process.platform === 'darwin') {
+      const q = bin.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+      spawn('osascript', ['-e', `tell application "Terminal" to do script "'${q}'"`, '-e', 'tell application "Terminal" to activate'], { detached: true }).unref();
+    } else {
+      spawn('x-terminal-emulator', ['-e', bin], { detached: true }).on('error', () => {}).unref();
+    }
+  } catch (err) {
+    console.error('Could not open a terminal:', err.message);
+  }
+}
+
+// While Claude Code is reporting to us it is running – the best moment to find
+// out where its executable lives (works for any install, incl. Store/MSIX apps).
+let learning = false;
+let lastLearn = 0;
+async function learnClaudePath() {
+  if (settings.claudePath || learning || !store.lastHookAt || Date.now() - lastLearn < 60_000) return;
+  learning = true;
+  lastLearn = Date.now();
+  try {
+    const found = await findClaude({ processesOnly: true });
+    if (found) {
+      settings.claudePath = found;
+      saveSettings();
+    }
+  } catch { /* try again later */ } finally {
+    learning = false;
+  }
+}
+
 // Where Claude Code lives; remembered once found (desktop-app users often don't have it on PATH).
 async function claudeBinary() {
   if (settings.claudePath && await verifyClaude(settings.claudePath)) return settings.claudePath;
@@ -464,12 +505,12 @@ function runClaudeWith(bin, prompt) {
 
     store.set('quick', 'thinking', t('asking'), undefined, prompt.length > 80 ? prompt.slice(0, 79) + '…' : prompt);
 
-    const finish = (ok, output) => {
+    const finish = (ok, output, action) => {
       if (done) return;
       done = true;
       clearTimeout(timer);
       store.set('quick', ok ? 'done' : 'error', ok ? t('answered') : t('failed'));
-      resolve({ ok, output });
+      resolve({ ok, output, action });
     };
 
     let child;
@@ -490,7 +531,16 @@ function runClaudeWith(bin, prompt) {
       if (e.code === 'ENOENT') delete settings.claudePath; // moved/updated – search again next time
       finish(false, e.code === 'ENOENT' ? t('claudeNotFound') : e.message);
     });
-    child.on('close', (code) => finish(code === 0, code === 0 ? out.trim() || t('noOutput') : (err.trim() || out.trim() || `Exit code ${code}`)));
+    child.on('close', (code) => {
+      const text = code === 0 ? out.trim() || t('noOutput') : (err.trim() || out.trim() || `Exit code ${code}`);
+      // The desktop app logs in its own copy of Claude Code internally; started on
+      // its own it needs a one-time /login.
+      if (code !== 0 && /not logged in|please run \/login|\/login/i.test(text)) {
+        loginBin = bin;
+        return finish(false, t('loginNeeded'), 'login');
+      }
+      finish(code === 0, text);
+    });
     child.stdin.end(prompt);
   });
 }

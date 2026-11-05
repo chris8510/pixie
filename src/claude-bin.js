@@ -33,7 +33,15 @@ function appDataDirs({ platform = process.platform, env = process.env, home = os
   if (isWin(platform)) {
     const roaming = env.APPDATA || path.join(home, 'AppData', 'Roaming');
     const local = env.LOCALAPPDATA || path.join(home, 'AppData', 'Local');
-    return [path.join(roaming, 'Claude'), path.join(local, 'Claude'), path.join(local, 'AnthropicClaude')];
+    const dirs = [path.join(roaming, 'Claude'), path.join(local, 'Claude'), path.join(local, 'AnthropicClaude')];
+    // Store/MSIX installs keep their data virtualized under Packages\Claude_<id>\LocalCache
+    let pkgs = [];
+    try { pkgs = fs.readdirSync(path.join(local, 'Packages')).filter((n) => /^(Claude|Anthropic)/i.test(n)); } catch { /* none */ }
+    for (const pkg of pkgs) {
+      const cache = path.join(local, 'Packages', pkg, 'LocalCache');
+      dirs.push(path.join(cache, 'Roaming', 'Claude'), path.join(cache, 'Local', 'Claude'), path.join(cache, 'Local', 'AnthropicClaude'));
+    }
+    return dirs;
   }
   if (platform === 'darwin') return [path.join(home, 'Library', 'Application Support', 'Claude')];
   return [path.join(home, '.config', 'Claude')];
@@ -50,7 +58,7 @@ function isFile(p) {
 }
 
 // Newest matching files below `root`, at most `depth` levels deep.
-function findBelow(root, names, depth = 5) {
+function findBelow(root, names, depth = 7) {
   const found = [];
   const walk = (dir, d) => {
     let entries;
@@ -68,7 +76,7 @@ function findBelow(root, names, depth = 5) {
 function run(file, args, opts = {}) {
   return new Promise((resolve) => {
     const shell = /\.(cmd|bat)$/i.test(file);
-    execFile(shell ? `"${file}"` : file, args, { timeout: 8000, windowsHide: true, shell, ...opts },
+    execFile(shell ? `"${file}"` : file, args, { timeout: 15000, windowsHide: true, shell, ...opts },
       (err, stdout) => resolve(err ? null : String(stdout)));
   });
 }
@@ -83,14 +91,15 @@ async function verify(file) {
 async function runningPaths(platform = process.platform) {
   if (isWin(platform)) {
     const out = await run('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command',
-      'Get-Process -Name claude -ErrorAction SilentlyContinue | ForEach-Object { $_.Path }']);
-    return out ? out.split(/\r?\n/).map((s) => s.trim()).filter(Boolean) : [];
+      "Get-CimInstance Win32_Process -Filter \"Name='claude.exe'\" -ErrorAction SilentlyContinue | ForEach-Object { $_.ExecutablePath }; "
+      + 'Get-Process -Name claude -ErrorAction SilentlyContinue | ForEach-Object { $_.Path }']);
+    return out ? [...new Set(out.split(/\r?\n/).map((s) => s.trim()).filter(Boolean))] : [];
   }
   const out = await run('ps', ['-axo', 'comm=']);
   return out ? out.split('\n').map((s) => s.trim()).filter((s) => s.startsWith('/') && path.basename(s) === 'claude') : [];
 }
 
-async function findClaude({ configured, platform = process.platform, env = process.env, home = os.homedir(), skipProcesses = false } = {}) {
+async function findClaude({ configured, platform = process.platform, env = process.env, home = os.homedir(), skipProcesses = false, processesOnly = false } = {}) {
   const tried = new Set();
   const check = async (file) => {
     if (!file || tried.has(file)) return null;
@@ -98,6 +107,14 @@ async function findClaude({ configured, platform = process.platform, env = proce
     return (await verify(file)) ? file : null;
   };
   const names = exeNames(platform);
+
+  if (processesOnly) {
+    for (const p of await runningPaths(platform)) {
+      const hit = await check(p);
+      if (hit) return hit;
+    }
+    return null;
+  }
 
   if (configured && (path.isAbsolute(configured) || configured.startsWith('~'))) {
     const p = configured.startsWith('~') ? path.join(home, configured.slice(1)) : configured;

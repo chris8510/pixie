@@ -98,6 +98,8 @@ Right-click → *Open settings* opens `~/.pixie/config.json`:
 
 The speech model is downloaded once on first use into `~/.pixie/models`.
 
+**Quick questions and login:** if you use Claude Code only through the desktop app, its copy of Claude Code is logged in by the app, not on its own. The first quick question then asks you to log in once: click **Log in**, type `/login` in the terminal that opens, done.
+
 ## Use it with other agents
 
 Anything on your machine can drive the pet:
