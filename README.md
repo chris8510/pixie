@@ -139,7 +139,7 @@ tools/             Pixelchen (a pet module) and the app icon builder
 
 ## Privacy
 
-Everything stays on your computer. The hooks only talk to `127.0.0.1`; voice is transcribed locally. The only network access is the one-time speech model download from Hugging Face and, of course, Claude Code itself.
+Everything stays on your computer. The hooks only talk to `127.0.0.1`; voice is transcribed locally. The only network access is the one-time speech model download from Hugging Face and, of course, Claude Code itself. Details: [privacy policy](docs/privacy.md).
 
 ## Disclaimer
 

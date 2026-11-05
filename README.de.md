@@ -127,7 +127,7 @@ Release: `version` in `package.json` erhöhen und auf `main` pushen (oder einen 
 
 ## Datenschutz
 
-Alles bleibt auf deinem Rechner. Die Hooks sprechen nur mit `127.0.0.1`, die Spracheingabe läuft lokal. Netzwerkzugriff gibt es nur für den einmaligen Download des Sprachmodells von Hugging Face – und natürlich durch Claude Code selbst.
+Alles bleibt auf deinem Rechner. Die Hooks sprechen nur mit `127.0.0.1`, die Spracheingabe läuft lokal. Netzwerkzugriff gibt es nur für den einmaligen Download des Sprachmodells von Hugging Face – und natürlich durch Claude Code selbst. Details: [Datenschutzerklärung](docs/privacy.md#deutsch).
 
 ## Hinweis
 
