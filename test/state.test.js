@@ -41,6 +41,18 @@ test('done stays until acknowledged', async () => {
   assert.strictEqual(s.acknowledge(), false);
 });
 
+test('a tool event arriving just after Stop does not undo "done"', () => {
+  let now = 1000;
+  const s = new StateStore({ now: () => now });
+  s.handleHookEvent(ev('Stop'));
+  now += 300;
+  s.handleHookEvent(ev('PostToolUse', { tool_name: 'Edit' }));
+  assert.strictEqual(s.snapshot().state, 'done');
+  now += 5000; // much later it's real activity again
+  s.handleHookEvent(ev('PreToolUse', { tool_name: 'Read', tool_input: { file_path: '/a/b.md' } }));
+  assert.strictEqual(s.snapshot().state, 'working');
+});
+
 test('optional ready timeout', async () => {
   const s = new StateStore({ readyMs: 20 });
   s.handleHookEvent(ev('Stop'));

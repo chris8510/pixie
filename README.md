@@ -37,7 +37,7 @@ More: click the pet to make it hop, drag it anywhere (it runs along), it looks t
 > **macOS:** the app isn't signed with an Apple developer certificate yet. On first launch, right-click Pixie → **Open**. If macOS says the app is "damaged", run `xattr -cr /Applications/Pixie.app` once.
 > **Windows:** SmartScreen may warn about an unknown publisher → **More info → Run anyway**.
 
-The hooks are a single `curl` call to `127.0.0.1` – fast, no Node.js needed, and they never block Claude Code if Pixie isn't running.
+The hooks run `curl` directly (no shell, so Bash, Git Bash and PowerShell all work; curl ships with macOS, Linux and Windows 10+) and in the background (`async`): Claude Code never waits for Pixie and is never blocked by it, whether Pixie is running or not. Hooks from older Pixie versions are updated automatically on start.
 
 ## Pets – compatible with Codex
 

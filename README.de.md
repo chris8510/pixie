@@ -37,7 +37,7 @@ Außerdem: Klick aufs Pet lässt es hüpfen, du kannst es überallhin ziehen (es
 > **macOS:** Die App ist noch nicht mit einem Apple-Entwicklerzertifikat signiert. Beim ersten Start: Rechtsklick auf Pixie → **Öffnen**. Meldet macOS, die App sei „beschädigt“, einmal `xattr -cr /Applications/Pixie.app` im Terminal ausführen.
 > **Windows:** SmartScreen warnt eventuell vor einem unbekannten Herausgeber → **Weitere Informationen → Trotzdem ausführen**.
 
-Die Hooks sind ein einzelner `curl`-Aufruf an `127.0.0.1` – schnell, ohne Node.js, und sie halten Claude Code nie auf, auch wenn Pixie nicht läuft.
+Die Hooks rufen `curl` direkt auf (ohne Shell, funktioniert also mit Bash, Git Bash und PowerShell; curl ist bei macOS, Linux und Windows 10+ dabei) und laufen im Hintergrund (`async`): Claude Code wartet nie auf Pixie und wird nie von ihm blockiert, egal ob Pixie läuft oder nicht. Hooks älterer Pixie-Versionen werden beim Start automatisch aktualisiert.
 
 ## Pets – kompatibel mit Codex
 

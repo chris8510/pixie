@@ -1,7 +1,10 @@
 'use strict';
 
 // Adds/removes the Pixie hooks in Claude Code's settings (~/.claude/settings.json).
-// The hook is a plain curl call, so it works without Node.js and is fast.
+// The hook runs curl directly (exec form: command + args, no shell), so it
+// works the same with Bash, Git Bash or PowerShell, and needs no Node.js.
+// It runs async: Claude Code never waits for Pixie and can never be blocked
+// by it, whether Pixie is running or not.
 // Existing hooks are kept; a backup of the file is written before each change.
 
 const fs = require('fs');
@@ -16,12 +19,22 @@ function settingsPath(env = process.env, home = os.homedir()) {
   return env.CLAUDE_SETTINGS || path.join(env.CLAUDE_CONFIG_DIR || path.join(home, '.claude'), 'settings.json');
 }
 
-function hookCommand(port) {
-  // -m 1: never hold Claude Code up for more than a second; `|| true`: never report an error
-  return `curl -s -m 1 -X POST -H "Content-Type: application/json" -H "X-Pixie: 1" --data-binary @- http://127.0.0.1:${port}/event || true`;
+function hookHandler(port) {
+  return {
+    type: 'command',
+    command: 'curl',
+    args: ['-s', '-m', '2', '-X', 'POST', '-H', 'Content-Type: application/json', '-H', 'X-Pixie: 1',
+      '--data-binary', '@-', `http://127.0.0.1:${port}/event`],
+    async: true,
+    timeout: 5,
+  };
 }
 
-const isOurs = (h) => MARKS.some((m) => String(h && h.command || '').includes(m));
+const handlerText = (h) => [h && h.command, ...((h && h.args) || [])].map(String).join(' ');
+const isOurs = (h) => MARKS.some((m) => handlerText(h).includes(m));
+// Older Pixie versions wrote a shell string ("curl … || true"), which breaks
+// under PowerShell. Anything of ours that isn't the current form is outdated.
+const isCurrent = (h, port) => JSON.stringify(h) === JSON.stringify(hookHandler(port));
 
 // Pure: returns a new settings object.
 function applyHooks(settings, { port, remove = false }) {
@@ -33,7 +46,7 @@ function applyHooks(settings, { port, remove = false }) {
       .map((m) => ({ ...m, hooks: (m.hooks || []).filter((h) => !isOurs(h)) }))
       .filter((m) => m.hooks.length > 0);
     if (!remove) {
-      const entry = { hooks: [{ type: 'command', command: hookCommand(port), timeout: 5 }] };
+      const entry = { hooks: [hookHandler(port)] };
       if (TOOL_EVENTS.has(ev)) entry.matcher = '*';
       list.push(entry);
     }
@@ -65,6 +78,17 @@ function isInstalled(file = settingsPath()) {
   }
 }
 
+// Installed by an older version (or for another port) → should be rewritten.
+function isOutdated(port, file = settingsPath()) {
+  try {
+    const s = readSettings(file);
+    const ours = EVENTS.flatMap((ev) => (s.hooks?.[ev] || []).flatMap((m) => (m.hooks || []).filter(isOurs)));
+    return ours.length > 0 && ours.some((h) => !isCurrent(h, port));
+  } catch {
+    return false;
+  }
+}
+
 function install({ port, remove = false, file = settingsPath() }) {
   const settings = readSettings(file);
   let backup = null;
@@ -77,4 +101,4 @@ function install({ port, remove = false, file = settingsPath() }) {
   return { file, backup };
 }
 
-module.exports = { EVENTS, settingsPath, hookCommand, applyHooks, isInstalled, install };
+module.exports = { EVENTS, settingsPath, hookHandler, applyHooks, isInstalled, isOutdated, install };

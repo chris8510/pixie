@@ -52,6 +52,10 @@ function start() {
 
   loadSettings();
   scanPets();
+  // Hooks written by an older Pixie (shell syntax that breaks under PowerShell) are fixed right away.
+  if (hooks.isOutdated(config.port)) {
+    try { hooks.install({ port: config.port }); } catch (err) { console.error('Could not update hooks:', err.message); }
+  }
   setupPermissions();
   createWindow();
   startServer();
@@ -309,10 +313,16 @@ ipcMain.on('drag:start', () => {
   const c = screen.getCursorScreenPoint();
   const [wx, wy] = win.getPosition();
   const off = { x: c.x - wx, y: c.y - wy };
+  let last = null;
   dragTimer = setInterval(() => {
     if (!win) return;
     const p = screen.getCursorScreenPoint();
-    win.setPosition(p.x - off.x, p.y - off.y);
+    // Only move when the mouse moved: on Windows with display scaling, setting the
+    // same position again and again shifts the window by rounding errors (drift).
+    if (last && p.x === last.x && p.y === last.y) return;
+    last = p;
+    // setBounds with a fixed size keeps the window from slowly growing/shifting.
+    win.setBounds({ x: Math.round(p.x - off.x), y: Math.round(p.y - off.y), width: WIN_W, height: WIN_H });
   }, 16);
 });
 

@@ -86,6 +86,10 @@ class StateStore {
     const { t } = this;
     const id = String(ev.session_id || 'default');
     const project = ev.cwd ? path.basename(String(ev.cwd)) : undefined;
+    // Hooks run async, so a tool event fired just before "Stop" can arrive just after it.
+    const prev = this.sessions.get(id);
+    const late = ['PreToolUse', 'PostToolUse', 'PreCompact'].includes(ev.hook_event_name);
+    if (late && prev && prev.state === 'done' && this.now() - prev.ts < 2000) return false;
     switch (ev.hook_event_name) {
       case 'SessionStart':
         this.set(id, 'idle', t('ready'), project, '');
