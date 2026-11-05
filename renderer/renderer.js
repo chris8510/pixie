@@ -13,7 +13,7 @@
   const zz = $('zz');
   const dock = $('dock');
   const pill = $('pill');
-  const panels = { ask: $('askbox'), reply: $('reply') };
+  const panels = { ask: $('askbox'), reply: $('reply'), tune: $('tune') };
   const buttons = { ask: $('btn-ask'), voice: $('btn-voice'), reply: $('btn-reply') };
   const replyText = $('reply-text');
   const askInput = $('ask-input');
@@ -21,6 +21,7 @@
   const cfg = await window.pet.getConfig();
   const T = (key, vars = {}) => String(cfg.strings[key] ?? key).replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? '');
   const sleepMs = (cfg.sleepAfterSeconds || 120) * 1000;
+  let petScale = cfg.petScale;
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
   // static texts
@@ -78,8 +79,8 @@
 
   function sizeCanvas() {
     const dpr = window.devicePixelRatio || 1;
-    const w = Math.round(sheet.cw * cfg.petScale);
-    const h = Math.round(sheet.ch * cfg.petScale);
+    const w = Math.round(sheet.cw * petScale);
+    const h = Math.round(sheet.ch * petScale);
     canvas.style.width = `${w}px`;
     canvas.style.height = `${h}px`;
     canvas.width = Math.round(w * dpr);
@@ -278,13 +279,33 @@
     for (const [key, panel] of Object.entries(panels)) {
       const on = key === name && show;
       panel.classList.toggle('hidden', !on);
-      buttons[key].classList.toggle('active', on);
+      if (buttons[key]) buttons[key].classList.toggle('active', on);
     }
     if (show && name === 'ask') setTimeout(() => askInput.focus(), 0);
     setDock(show);
   }
 
   buttons.ask.addEventListener('click', () => togglePanel('ask'));
+
+  // ---------- customize panel: pet size ----------
+
+  const sizeInput = $('tune-size');
+  const sizeValue = $('tune-value');
+  const showSize = () => {
+    sizeInput.value = Math.round(petScale * 100);
+    sizeValue.textContent = `${Math.round(petScale * 100)} %`;
+  };
+  const applySize = (scale, persist) => {
+    petScale = scale;
+    showSize();
+    if (sheet) { sizeCanvas(); lastDrawn = ''; }
+    window.pet.setScale(scale, persist);
+  };
+  sizeInput.addEventListener('input', () => applySize(Number(sizeInput.value) / 100, false));
+  sizeInput.addEventListener('change', () => applySize(Number(sizeInput.value) / 100, true));
+  $('tune-reset').addEventListener('click', () => applySize(cfg.defaultPetScale, true));
+  $('tune-close').addEventListener('click', () => togglePanel('tune', false));
+  window.pet.onTune(() => { showSize(); togglePanel('tune', true); });
   buttons.reply.addEventListener('click', () => togglePanel('reply'));
 
   // ---------- voice input (local Whisper) ----------

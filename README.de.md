@@ -26,6 +26,8 @@ Fährst du mit der Maus aufs Pet, erscheinen darunter drei Knöpfe:
 - 🎙 **Spracheingabe** – sprechen statt tippen. Wird **lokal** mit Whisper umgewandelt: kein Konto, kein API-Schlüssel, die Aufnahme verlässt den Rechner nicht
 - ⌃ **Letzte Antwort**
 
+Rechtsklick → **Pet anpassen…** ändert die Größe (live, wird gespeichert). Karte und Knöpfe folgen dem hellen bzw. dunklen Modus des Systems.
+
 Außerdem: Klick aufs Pet lässt es hüpfen, du kannst es überallhin ziehen (es läuft mit), es schaut zur Maus, schläft irgendwann ein, und mehrere Claude-Code-Sitzungen zeigt es als „2 aktiv“ – wer auf dich wartet, hat Vorrang.
 
 ## Installation

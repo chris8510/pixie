@@ -26,6 +26,8 @@ Hover over the pet and three buttons appear below it:
 - 🎙 **Voice input** – speak instead of typing. Transcribed **locally** with Whisper: no account, no API key, audio never leaves your computer
 - ⌃ **Last answer**
 
+Right-click → **Customize pet…** changes its size (live, remembered). The card and buttons follow your system's light/dark mode.
+
 More: click the pet to make it hop, drag it anywhere (it runs along), it looks towards your mouse, falls asleep after a while, and several Claude Code sessions at once are shown as "2 active" – whoever needs you wins.
 
 ## Install

@@ -60,6 +60,8 @@ const STRINGS = {
     agoSec: '{n} s', agoMin: '{n} min', agoHour: '{n} h',
     petsFound: '{n} Pets gefunden', petsSkipped: 'Übersprungen: {list}', petsAllGood: 'Ordner: ~/.pixie/pets und ~/.codex/pets',
     searchingClaude: 'Suche Claude Code…',
+    tuneMenu: 'Pet anpassen…', tuneTitle: 'Pet anpassen', petSize: 'Pet-Größe',
+    petSizeHint: 'Passe die Größe deines Pets an', reset: 'Zurücksetzen',
   },
   en: {
     ready: 'Ready!',
@@ -115,6 +117,8 @@ const STRINGS = {
     agoSec: '{n} s', agoMin: '{n} min', agoHour: '{n} h',
     petsFound: '{n} pets found', petsSkipped: 'Skipped: {list}', petsAllGood: 'Folders: ~/.pixie/pets and ~/.codex/pets',
     searchingClaude: 'Looking for Claude Code…',
+    tuneMenu: 'Customize pet…', tuneTitle: 'Customize pet', petSize: 'Pet size',
+    petSizeHint: 'Adjust the size of your pet', reset: 'Reset',
   },
 };
 

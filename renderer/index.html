@@ -19,6 +19,20 @@
       <pre id="reply-text"></pre>
     </section>
 
+    <section id="tune" class="panel hit hidden">
+      <div class="panel-head">
+        <span data-t="tuneTitle"></span>
+        <button id="tune-close" type="button" data-t-label="close">×</button>
+      </div>
+      <div class="tune-label" data-t="petSize"></div>
+      <div class="tune-hint" data-t="petSizeHint"></div>
+      <div class="tune-row">
+        <input id="tune-size" type="range" min="40" max="100" step="1">
+        <span id="tune-value"></span>
+        <button id="tune-reset" type="button" data-t="reset"></button>
+      </div>
+    </section>
+
     <section id="askbox" class="panel hit hidden">
       <div class="panel-title" data-t="quickTitle"></div>
       <div id="prompt-buttons"></div>

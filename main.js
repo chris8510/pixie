@@ -19,7 +19,10 @@ const { STRINGS, DEFAULT_PROMPTS, pickLanguage, translator } = require('./src/i1
 const { Voice } = require('./src/voice');
 
 const WIN_W = 380;
-const WIN_H = 480;
+const MIN_SCALE = 0.4;
+const MAX_SCALE = 1;
+// Room for panels + card above the pet and the dock below it.
+const winHeight = (scale) => Math.round(270 + 208 * scale);
 // Ignoring mouse events while still receiving mousemove only works on macOS/Windows.
 const CLICK_THROUGH = process.platform !== 'linux';
 const USER_PET_DIR = path.join(PIXIE_HOME, 'pets');
@@ -44,6 +47,10 @@ if (!app.requestSingleInstanceLock()) {
   app.on('second-instance', () => showWindow());
   app.whenReady().then(start);
 }
+
+const clampScale = (s) => Math.min(MAX_SCALE, Math.max(MIN_SCALE, Number(s) || 0.65));
+const petScale = () => clampScale(settings.petScale ?? config.petScale);
+const WIN_H_NOW = () => winHeight(petScale());
 
 function start() {
   lang = pickLanguage(config.language, app.getLocale());
@@ -140,14 +147,14 @@ const POS_FILE = () => path.join(app.getPath('userData'), 'window.json');
 
 function defaultPosition() {
   const wa = screen.getPrimaryDisplay().workArea;
-  return { x: wa.x + wa.width - WIN_W - 8, y: wa.y + wa.height - WIN_H - 4 };
+  return { x: wa.x + wa.width - WIN_W - 8, y: wa.y + wa.height - WIN_H_NOW() - 4 };
 }
 
 function savedPosition() {
   try {
     const p = JSON.parse(fs.readFileSync(POS_FILE(), 'utf8'));
     const onScreen = screen.getAllDisplays().some(({ workArea: a }) =>
-      p.x + WIN_W > a.x + 40 && p.x < a.x + a.width - 40 && p.y + WIN_H > a.y + 40 && p.y < a.y + a.height - 40);
+      p.x + WIN_W > a.x + 40 && p.x < a.x + a.width - 40 && p.y + WIN_H_NOW() > a.y + 40 && p.y < a.y + a.height - 40);
     return onScreen ? p : null;
   } catch {
     return null;
@@ -165,7 +172,7 @@ function createWindow() {
   win = new BrowserWindow({
     title: 'Pixie',
     width: WIN_W,
-    height: WIN_H,
+    height: WIN_H_NOW(),
     x: pos.x,
     y: pos.y,
     frame: false,
@@ -237,6 +244,7 @@ function buildMenu() {
   const items = [
     { label: win && win.isVisible() ? t('hide') : t('show'), click: toggleWindow },
     { label: t('pet'), submenu: petMenu() },
+    { label: t('tuneMenu'), click: () => { showWindow(); send('tune'); } },
     { type: 'separator' },
     connected
       ? { label: t('hooksRemove'), click: () => setHooks(true) }
@@ -298,7 +306,8 @@ function setHooks(remove) {
 // ---------- IPC ----------
 
 ipcMain.handle('config:get', () => ({
-  petScale: config.petScale,
+  petScale: petScale(),
+  defaultPetScale: clampScale(config.petScale),
   prompts: Array.isArray(config.prompts) ? config.prompts : DEFAULT_PROMPTS[lang],
   sleepAfterSeconds: config.sleepAfterSeconds,
   voice: { enabled: Boolean(config.voice.enabled), autoSend: Boolean(config.voice.autoSend), maxSeconds: config.voice.maxSeconds || 60 },
@@ -333,6 +342,22 @@ ipcMain.handle('voice:transcribe', async (_e, audio) => {
   return voice.transcribe(audio.length > 16000 * 120 ? audio.slice(0, 16000 * 120) : audio);
 });
 
+// Live size change from the "Customize pet" panel; the window grows/shrinks
+// upwards so the pet stays where it is.
+ipcMain.on('scale:set', (_e, scale, persist) => {
+  settings.petScale = clampScale(scale);
+  if (win) {
+    const [x, y] = win.getPosition();
+    const [, h] = win.getSize();
+    const nh = WIN_H_NOW();
+    if (nh !== h) win.setBounds({ x, y: y + h - nh, width: WIN_W, height: nh });
+  }
+  if (persist) {
+    saveSettings();
+    savePosition();
+  }
+});
+
 ipcMain.on('mouse:ignore', (_e, ignore) => {
   if (CLICK_THROUGH && win && !dragTimer) win.setIgnoreMouseEvents(Boolean(ignore), { forward: true });
 });
@@ -351,7 +376,7 @@ ipcMain.on('drag:start', () => {
     if (last && p.x === last.x && p.y === last.y) return;
     last = p;
     // setBounds with a fixed size keeps the window from slowly growing/shifting.
-    win.setBounds({ x: Math.round(p.x - off.x), y: Math.round(p.y - off.y), width: WIN_W, height: WIN_H });
+    win.setBounds({ x: Math.round(p.x - off.x), y: Math.round(p.y - off.y), width: WIN_W, height: WIN_H_NOW() });
   }, 16);
 });
 
