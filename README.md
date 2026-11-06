@@ -40,7 +40,7 @@ More: click the pet to make it hop, drag it anywhere (it runs along), it looks t
 
 > **Windows:** Pixie is also coming to the [Microsoft Store](https://apps.microsoft.com/detail/9MXX7C3SVWDG) – installed from there it's signed by Microsoft, shows no warnings and updates itself.
 
-> **macOS:** the app isn't signed with an Apple developer certificate yet. On first launch, right-click Pixie → **Open**. If macOS says the app is "damaged", run `xattr -cr /Applications/Pixie.app` once.
+> **macOS:** the app isn't notarized by Apple yet, so macOS says it's from an *unidentified developer* the first time. Try to open Pixie once, then go to **System Settings → Privacy & Security** and click **Open Anyway** (on macOS 14 and older: right-click Pixie → **Open**). Only needed once.
 > **Windows:** SmartScreen may warn about an unknown publisher → **More info → Run anyway**.
 
 The hooks run `curl` directly (no shell, so Bash, Git Bash and PowerShell all work; curl ships with macOS, Linux and Windows 10+) and in the background (`async`): Claude Code never waits for Pixie and is never blocked by it, whether Pixie is running or not. Hooks from older Pixie versions are updated automatically on start.

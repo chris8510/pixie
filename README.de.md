@@ -40,7 +40,7 @@ Außerdem: Klick aufs Pet lässt es hüpfen, du kannst es überallhin ziehen (es
 
 > **Windows:** Pixie kommt auch in den [Microsoft Store](https://apps.microsoft.com/detail/9MXX7C3SVWDG) – von dort installiert ist es von Microsoft signiert, ohne Warnungen und aktualisiert sich selbst.
 
-> **macOS:** Die App ist noch nicht mit einem Apple-Entwicklerzertifikat signiert. Beim ersten Start: Rechtsklick auf Pixie → **Öffnen**. Meldet macOS, die App sei „beschädigt“, einmal `xattr -cr /Applications/Pixie.app` im Terminal ausführen.
+> **macOS:** Die App ist noch nicht von Apple notarisiert, deshalb meldet macOS beim ersten Start einen *nicht verifizierten Entwickler*. Pixie einmal öffnen, dann unter **Systemeinstellungen → Datenschutz & Sicherheit** auf **Dennoch öffnen** klicken (bis macOS 14: Rechtsklick auf Pixie → **Öffnen**). Nur beim ersten Mal nötig.
 > **Windows:** SmartScreen warnt eventuell vor einem unbekannten Herausgeber → **Weitere Informationen → Trotzdem ausführen**.
 
 Die Hooks rufen `curl` direkt auf (ohne Shell, funktioniert also mit Bash, Git Bash und PowerShell; curl ist bei macOS, Linux und Windows 10+ dabei) und laufen im Hintergrund (`async`): Claude Code wartet nie auf Pixie und wird nie von ihm blockiert, egal ob Pixie läuft oder nicht. Hooks älterer Pixie-Versionen werden beim Start automatisch aktualisiert.
